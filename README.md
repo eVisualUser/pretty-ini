@@ -1,4 +1,4 @@
-# pretty-ini
+# Pretty INI
 Light library to read/write ini files.
 
 ## Format
