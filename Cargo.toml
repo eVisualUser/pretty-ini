@@ -6,5 +6,6 @@ description = "Light library to read/write ini files"
 license = "MIT"
 readme = "README.md"
 keywords = ["ini", "file"]
+repository = "https://github.com/eVisualUser/pretty-ini"
 
 [dependencies]
