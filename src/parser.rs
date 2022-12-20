@@ -48,7 +48,7 @@ impl Parser {
         name = name.trim().to_string();
         value = value.trim().to_string();
 
-        Variable { name, value, uknow_element: None }
+        Variable { name, value, unknow_element: None }
     }
 
     pub fn parse_table_title(&self, title: &str) -> String {

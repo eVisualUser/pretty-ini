@@ -5,7 +5,7 @@ use std::fmt::Debug;
 pub struct Variable {
     pub name: String,
     pub value: String,
-    pub uknow_element: Option<String>,
+    pub unknow_element: Option<String>,
 }
 
 impl Variable {

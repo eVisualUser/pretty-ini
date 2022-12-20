@@ -53,7 +53,7 @@ impl Ini {
                 ElementType::Unknow => {
                     if line.trim() != "" {
                         let mut variable = Variable::default();
-                        variable.uknow_element = Some(line.to_string());
+                        variable.unknow_element = Some(line.to_string());
                         table.content.push(variable);
                     }
                 }

@@ -38,10 +38,10 @@ impl Table {
         }
 
         for var in self.content.iter() {
-            if var.uknow_element.is_none() {
+            if var.unknow_element.is_none() {
                 result.push(format!("{} {} {}", var.name, parser_config.define_char, var.value));
             } else {
-                result.push(var.uknow_element.clone().unwrap());
+                result.push(var.unknow_element.clone().unwrap());
             }
         }
 

@@ -1,11 +1,6 @@
 [package]
-name = "pretty-ini"
+name = "pretty_ini"
 version = "0.1.0"
 edition = "2021"
-
-[lib]
-name = "pretty_ini"
-path = "src/lib.rs"
-crate-type = ["staticlib"]
 
 [dependencies]
