@@ -53,7 +53,7 @@ impl IniFile {
         }
 
         result = self.pre_process(result);
-        self.buffer = Some(self.post_process(result));
+        self.buffer = Some(result);
     }
 
     pub fn save(&mut self, ini: &mut Ini) {
