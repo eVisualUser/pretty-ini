@@ -2,6 +2,8 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::io::Write;
 
+use crate::ini::Ini;
+
 pub type CryptAction = Option<Box<dyn Fn(Vec<String>) -> Vec<String>>>;
 
 #[derive(Default)]
@@ -13,8 +15,16 @@ pub struct IniFile {
 }
 
 impl IniFile {
+    pub fn clear_buffer(&mut self) {
+        self.buffer = None;
+    }
+
     pub fn set_buffer(&mut self, new_buffer: Vec<String>) {
         self.buffer = Some(new_buffer);
+    }
+
+    pub fn get_path(&self) -> String {
+        self.path.clone()
     }
 
     pub fn set_path(&mut self, path: &str) {
@@ -45,13 +55,20 @@ impl IniFile {
         self.buffer = Some(self.crypt(result));
     }
 
-    pub fn save(&self) {
+    pub fn save(&mut self, ini: &mut Ini) {
+        self.buffer = Some(ini.make_ini_file_buffer());
+
         std::fs::remove_file(&self.path).unwrap();
         std::fs::File::create(&self.path).unwrap();
         let mut file = File::options().write(true).open(&self.path).unwrap();
 
-        for line in self.buffer.clone().unwrap().iter() {
-            file.write(format!("{}\n", line).into_bytes().as_ref()).unwrap();
+        let buffer = self.buffer.clone().unwrap();
+        for line in 0..buffer.len() {
+            file.write(format!("{}", buffer[line]).into_bytes().as_ref()).unwrap();
+
+            if line != buffer.len() - 1 {
+                file.write("\n".to_string().into_bytes().as_ref()).unwrap();
+            }
         }
 
         file.flush().unwrap();

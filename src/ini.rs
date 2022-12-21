@@ -5,6 +5,7 @@ use crate::ini_file::IniFile;
 use crate::variable::Variable;
 
 pub const TABLE_NAME_ROOT: &str = "root";
+pub const TABLE_ERROR_ROOT: &str = "The table [root] already exist";
 
 #[derive(Default, Debug)]
 pub struct Ini {
@@ -29,21 +30,55 @@ impl Ini {
         self.parser.config.clone()
     }
 
-    pub fn get_table_mut(&mut self, name: &str) -> Option<&mut Table> {
+    pub fn get_table_mut(&mut self, name: &str) -> Result<&mut Table, String> {
         for i in 0..self.content.len() {
             if self.content[i].name == name {
-                return Some(&mut self.content[i]);
+                return Ok(&mut self.content[i]);
             }
         }
-        None
+        Err(format!("Table [{}] not found", name))
     }
 
     pub fn set_parser_config(&mut self, config: ParserConfig) {
         self.parser.config = config;
     }
 
-    pub fn load(&mut self, file: &IniFile) {
-        let lines = file.get_content().unwrap();
+    pub fn get_refmut(&mut self, table: &str, var: &str) -> Result<&mut Variable, String> {
+        #[allow(unused)]
+        let mut result: Result<&mut Variable, String> = Err(String::from("unknow error"));
+
+        let table = self.get_table_mut(table);
+        match table {
+            Ok(table) => {
+                result = table.get_variable_refmut(var);
+            }
+            Err(error) => {
+                return Err(error);
+            }
+        }
+
+        return result;
+    }
+
+    pub fn load(&mut self, file: &mut IniFile) -> Result<(), String>{
+        #[allow(unused)]
+        let mut lines = Vec::<String>::new();
+
+        match file.get_content() {
+            Some(content) => {
+                lines = content;
+            }
+            None => {
+                if file.exist() {
+                    file.load();
+                }
+                else {
+                    let error = format!("File {:?} not found", file.get_path());
+                    return Err(error);
+                }
+                return self.load(file);
+            }
+        }
 
         let mut table = Table::default();
         table.name = String::from(TABLE_NAME_ROOT);
@@ -59,8 +94,15 @@ impl Ini {
                 }
                 ElementType::Table => {
                     self.content.push(table);
-                    table = Table::default();
-                    table.name = self.parser.parse_table_title(line);
+
+                    let table_name = self.parser.parse_table_title(line);
+
+                    if table_name != TABLE_NAME_ROOT {
+                        table = Table::default();
+                        table.name = table_name;
+                    } else {
+                        return Err(String::from(TABLE_ERROR_ROOT));
+                    }
                 }
                 ElementType::Variable => {
                     table.content.push(self.parser.parse_variable(line));
@@ -68,5 +110,9 @@ impl Ini {
             }
         }
         self.content.push(table);
+
+        file.clear_buffer();
+
+        Ok(())
     }
 }
