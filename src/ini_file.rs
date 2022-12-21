@@ -4,14 +4,14 @@ use std::io::Write;
 
 use crate::ini::Ini;
 
-pub type CryptAction = Option<Box<dyn Fn(Vec<String>) -> Vec<String>>>;
+pub type ProcessAction = Option<Box<dyn Fn(Vec<String>) -> Vec<String>>>;
 
 #[derive(Default)]
 pub struct IniFile {
     path: String,
     buffer: Option<Vec<String>>,
-    uncrypt: CryptAction,
-    encrypt: CryptAction,
+    pre_process: ProcessAction,
+    post_process: ProcessAction,
 }
 
 impl IniFile {
@@ -35,12 +35,12 @@ impl IniFile {
         std::path::Path::new(&self.path).exists()
     }
 
-    pub fn add_uncrypt_action(&mut self, action: CryptAction) {
-        self.uncrypt = action;
+    pub fn add_pre_process_action(&mut self, action: ProcessAction) {
+        self.pre_process = action;
     }
 
-    pub fn add_encrypt_action(&mut self, action: CryptAction) {
-        self.encrypt = action;
+    pub fn add_post_process_action(&mut self, action: ProcessAction) {
+        self.post_process = action;
     }
 
     pub fn load(&mut self) {
@@ -52,11 +52,13 @@ impl IniFile {
             result.push(line.unwrap());
         }
 
-        self.buffer = Some(self.crypt(result));
+        result = self.pre_process(result);
+        self.buffer = Some(self.post_process(result));
     }
 
     pub fn save(&mut self, ini: &mut Ini) {
         self.buffer = Some(ini.make_ini_file_buffer());
+        self.buffer = Some(self.post_process(self.buffer.clone().unwrap()));
 
         std::fs::remove_file(&self.path).unwrap();
         std::fs::File::create(&self.path).unwrap();
@@ -74,8 +76,8 @@ impl IniFile {
         file.flush().unwrap();
     }
 
-    pub fn decrypt(&self, content: Vec<String>) -> Vec<String> {
-        match &self.uncrypt {
+    pub fn pre_process(&self, content: Vec<String>) -> Vec<String> {
+        match &self.pre_process {
             Some(uncrypt) => {
                 (uncrypt)(content)
             }
@@ -83,8 +85,8 @@ impl IniFile {
         }
     }
 
-    pub fn crypt(&mut self, content: Vec<String>) -> Vec<String> {
-        match &self.encrypt {
+    pub fn post_process(&mut self, content: Vec<String>) -> Vec<String> {
+        match &self.post_process {
             Some(encrypt) => {
                 (encrypt)(content)
             }

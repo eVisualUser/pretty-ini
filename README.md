@@ -32,6 +32,33 @@ var_iter.set(var_iter.parse::<i32>().unwrap() + 1);
 file.save(&mut ini);
 ```
 
+## Pre/Post Process
+In the IniFile you can add some process using a ProcessAction.
+
+### Pre Process
+Called before assign the file content to the buffer.
+
+```rust
+let action = Some(Box::new(|buffer| {
+    // Do nothing
+    return buffer;
+}));
+
+ini_file.add_pre_process(action);
+```
+
+### Post Process
+Called before saving the file.
+
+```rust
+let action = Some(Box::new(|buffer| {
+    // Do nothing
+    return buffer;
+}));
+
+ini_file.add_post_process(action);
+```
+
 ## Warnings
 - The output when saving will be reformated.
 - Implicit "root" table.
