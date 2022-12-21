@@ -1,23 +1,37 @@
 # Pretty INI
+
 Light library to read/write ini files.
 
 ## Format
-- A variable and an header or a comment can't be on the same line
-- A line that is not a variable or a header is an unknow element
+
+### Header / Table / Section
+[name]
+
+### Variable
+
+myVar = value
 
 ## Example
 
-<code lang="rust">
+```rust
 use pretty_ini::{ini_file, ini};
 
+// File buffer
 let mut file = ini_file::IniFile::default();
 file.set_path("demo.ini");
 
+// Load
 let mut ini = ini::Ini::default();
 ini.load(&mut file).unwrap();
 
+// Access a var and add 1
 let mut var_iter = ini.get_refmut(ini::TABLE_NAME_ROOT, "iter").unwrap();
 var_iter.set(var_iter.parse::<i32>().unwrap() + 1);
 
+// Save the file
 file.save(&mut ini);
-</code>
+```
+
+## Warnings
+- The output when saving will be reformated.
+- Implicit "root" table.
