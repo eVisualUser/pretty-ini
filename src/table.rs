@@ -1,5 +1,5 @@
-use crate::variable::Variable;
 use crate::parser_config::ParserConfig;
+use crate::variable::Variable;
 
 #[derive(Default, Debug, Clone)]
 pub struct Table {
@@ -14,7 +14,7 @@ impl Table {
                 return Ok(&mut self.content[i]);
             }
         }
-        Err(format!("Variable [{}] bot found", name))
+        Err(format!("Variable [{}] not found", name))
     }
 
     pub fn get_variable_value(&self, name: String) -> String {
@@ -34,12 +34,18 @@ impl Table {
         let mut result = Vec::<String>::new();
 
         if self.name != crate::ini::TABLE_NAME_ROOT {
-            result.push(format!("{}{}{}", parser_config.section_closure.open, self.name, parser_config.section_closure.close));
+            result.push(format!(
+                "{}{}{}",
+                parser_config.section_closure.open, self.name, parser_config.section_closure.close
+            ));
         }
 
         for var in self.content.iter() {
             if var.unknow_element.is_none() {
-                result.push(format!("{} {} {}", var.name, parser_config.define_char, var.value));
+                result.push(format!(
+                    "{} {} {}",
+                    var.name, parser_config.define_char, var.value
+                ));
             } else {
                 result.push(var.unknow_element.clone().unwrap());
             }

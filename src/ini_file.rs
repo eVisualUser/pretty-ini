@@ -1,6 +1,6 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader};
 use std::io::Write;
+use std::io::{BufRead, BufReader};
 
 use crate::ini::Ini;
 
@@ -66,7 +66,8 @@ impl IniFile {
 
         let buffer = self.buffer.clone().unwrap();
         for line in 0..buffer.len() {
-            file.write(format!("{}", buffer[line]).into_bytes().as_ref()).unwrap();
+            file.write(format!("{}", buffer[line]).into_bytes().as_ref())
+                .unwrap();
 
             if line != buffer.len() - 1 {
                 file.write("\n".to_string().into_bytes().as_ref()).unwrap();
@@ -78,18 +79,14 @@ impl IniFile {
 
     pub fn pre_process(&self, content: Vec<String>) -> Vec<String> {
         match &self.pre_process {
-            Some(uncrypt) => {
-                (uncrypt)(content)
-            }
+            Some(uncrypt) => (uncrypt)(content),
             None => content,
         }
     }
 
     pub fn post_process(&mut self, content: Vec<String>) -> Vec<String> {
         match &self.post_process {
-            Some(encrypt) => {
-                (encrypt)(content)
-            }
+            Some(encrypt) => (encrypt)(content),
             None => content,
         }
     }
