@@ -1,7 +1,7 @@
-use crate::table::Table;
-use crate::parser::{Parser, ElementType};
-use crate::parser_config::ParserConfig;
 use crate::ini_file::IniFile;
+use crate::parser::{ElementType, Parser};
+use crate::parser_config::ParserConfig;
+use crate::table::Table;
 use crate::variable::Variable;
 
 pub const TABLE_NAME_ROOT: &str = "root";
@@ -60,7 +60,7 @@ impl Ini {
         return result;
     }
 
-    pub fn load(&mut self, file: &mut IniFile) -> Result<(), String>{
+    pub fn load(&mut self, file: &mut IniFile) -> Result<(), String> {
         #[allow(unused)]
         let mut lines = Vec::<String>::new();
 
@@ -71,8 +71,7 @@ impl Ini {
             None => {
                 if file.exist() {
                     file.load();
-                }
-                else {
+                } else {
                     let error = format!("File {:?} not found", file.get_path());
                     return Err(error);
                 }

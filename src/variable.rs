@@ -1,5 +1,5 @@
-use std::str::FromStr;
 use std::fmt::{Debug, Display};
+use std::str::FromStr;
 
 #[derive(Default, Debug, Clone)]
 pub struct Variable {

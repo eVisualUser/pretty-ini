@@ -12,7 +12,6 @@ pub struct ParserConfig {
 
 impl Default for ParserConfig {
     fn default() -> Self {
-
         let mut section_closure = Closure::default();
         section_closure.open = '[';
         section_closure.close = ']';

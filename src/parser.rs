@@ -14,9 +14,7 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(config: ParserConfig) -> Self {
-        Self {
-            config,
-        }
+        Self { config }
     }
 
     pub fn get_element_type(&self, input: &str) -> ElementType {
@@ -37,8 +35,7 @@ impl Parser {
         for i in variable.chars() {
             if i == self.config.define_char {
                 is_name = false;
-            }
-            else if is_name {
+            } else if is_name {
                 name.push(i);
             } else {
                 value.push(i);
@@ -48,7 +45,11 @@ impl Parser {
         name = name.trim().to_string();
         value = value.trim().to_string();
 
-        Variable { name, value, unknow_element: None }
+        Variable {
+            name,
+            value,
+            unknow_element: None,
+        }
     }
 
     pub fn parse_table_title(&self, title: &str) -> String {
