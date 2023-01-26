@@ -1,6 +1,6 @@
 [package]
 name = "pretty_ini"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 description = "Light library to read/write ini files"
 license = "MIT"
