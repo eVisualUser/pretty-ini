@@ -7,7 +7,7 @@ use crate::variable::Variable;
 pub const TABLE_NAME_ROOT: &str = "root";
 pub const TABLE_ERROR_ROOT: &str = "The table [root] already exist";
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct Ini {
     content: Vec<Table>,
     unknow_elements: Vec<String>,
@@ -25,15 +25,63 @@ impl Ini {
 
         result
     }
+}
 
+impl Ini {
+    pub fn get_all_table_names(&self) -> Vec<String> {
+        let mut result = Vec::new();
+
+        for table in self.content.iter() {
+            result.push(table.name.clone());
+        }
+
+        result
+    }
+
+    pub fn get_all_keys_in_table(&self, table: &str) -> Result<Vec<String>, String> {
+        let mut key_list = Vec::<String>::new();
+
+        let table = self.get_table_ref(table)?;
+
+        for var in table.content.iter() {
+            key_list.push(var.key.clone());
+        }
+
+        if !key_list.is_empty() {
+            return Ok(key_list);
+        }
+
+        Err(format!("No key found in table: {:?}", table))
+    }
+}
+
+impl Ini {
     pub fn get_parser_config(&self) -> ParserConfig {
         self.parser.config.clone()
     }
 
-    pub fn get_table_mut(&mut self, name: &str) -> Result<&mut Table, String> {
+    pub fn get_table_ref_mut(&mut self, name: &str) -> Result<&mut Table, String> {
         for i in 0..self.content.len() {
             if self.content[i].name == name {
                 return Ok(&mut self.content[i]);
+            }
+        }
+        Err(format!("Table [{}] not found", name))
+    }
+
+    pub fn get_table_ref(&self, name: &str) -> Result<&Table, String> {
+        for i in 0..self.content.len() {
+            if self.content[i].name == name {
+                return Ok(&self.content[i]);
+            }
+        }
+        Err(format!("Table [{}] not found", name))
+    }
+
+    pub fn get_table(&self, name: &str) -> Result<Table, String> {
+        for i in 0..self.content.len() {
+            if self.content[i].name == name {
+                return Ok(self.content[i].clone());
             }
         }
         Err(format!("Table [{}] not found", name))
@@ -43,14 +91,14 @@ impl Ini {
         self.parser.config = config;
     }
 
-    pub fn get_refmut(&mut self, table: &str, var: &str) -> Result<&mut Variable, String> {
+    pub fn get_ref_mut(&mut self, table: &str, var: &str) -> Result<&mut Variable, String> {
         #[allow(unused)]
         let mut result: Result<&mut Variable, String> = Err(String::from("unknow error"));
 
-        let table = self.get_table_mut(table);
+        let table = self.get_table_ref_mut(table);
         match table {
             Ok(table) => {
-                result = table.get_variable_refmut(var);
+                result = table.get_variable_ref_mut(var);
             }
             Err(error) => {
                 return Err(error);
@@ -60,9 +108,42 @@ impl Ini {
         return result;
     }
 
+    pub fn get_ref(&self, table: &str, var: &str) -> Result<&Variable, String> {
+        let result: Result<&Variable, String>;
+
+        let table = self.get_table_ref(table);
+        match table {
+            Ok(table) => {
+                result = table.get_variable_ref(var);
+            }
+            Err(error) => {
+                return Err(error);
+            }
+        }
+
+        return result;
+    }
+
+    pub fn get(&self, table: &str, var: &str) -> Result<Variable, String> {
+        let result: Result<Variable, String>;
+
+        let table = self.get_table_ref(table);
+        match table {
+            Ok(table) => {
+                result = table.get_variable(var).clone();
+            }
+            Err(error) => {
+                return Err(error);
+            }
+        }
+
+        return result;
+    }
+}
+
+impl Ini {
     pub fn load(&mut self, file: &mut IniFile) -> Result<(), String> {
-        #[allow(unused)]
-        let mut lines = Vec::<String>::new();
+        let lines;
 
         match file.get_content() {
             Some(content) => {

@@ -8,18 +8,36 @@ pub struct Table {
 }
 
 impl Table {
-    pub fn get_variable_refmut(&mut self, name: &str) -> Result<&mut Variable, String> {
+    pub fn get_variable_ref_mut(&mut self, key: &str) -> Result<&mut Variable, String> {
         for i in 0..self.content.len() {
-            if self.content[i].name == name {
+            if self.content[i].key == key {
                 return Ok(&mut self.content[i]);
             }
         }
-        Err(format!("Variable [{}] not found", name))
+        Err(format!("Variable [{}] not found", key))
     }
 
-    pub fn get_variable_value(&self, name: String) -> String {
+    pub fn get_variable_ref(&self, key: &str) -> Result<&Variable, String> {
+        for i in 0..self.content.len() {
+            if self.content[i].key == key {
+                return Ok(&self.content[i]);
+            }
+        }
+        Err(format!("Variable [{}] not found", key))
+    }
+
+    pub fn get_variable(&self, key: &str) -> Result<Variable, String> {
+        for i in 0..self.content.len() {
+            if self.content[i].key == key {
+                return Ok(self.content[i].clone());
+            }
+        }
+        Err(format!("Variable [{}] not found", key))
+    }
+
+    pub fn get_variable_value(&self, key: String) -> String {
         for var in self.content.iter() {
-            if var.name == name {
+            if var.key == key {
                 return var.value.clone();
             }
         }
@@ -44,7 +62,7 @@ impl Table {
             if var.unknow_element.is_none() {
                 result.push(format!(
                     "{} {} {}",
-                    var.name, parser_config.define_char, var.value
+                    var.key, parser_config.define_char, var.value
                 ));
             } else {
                 result.push(var.unknow_element.clone().unwrap());

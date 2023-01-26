@@ -7,7 +7,7 @@ pub enum ElementType {
     Variable,
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct Parser {
     pub config: ParserConfig,
 }
@@ -28,25 +28,25 @@ impl Parser {
     }
 
     pub fn parse_variable(&self, variable: &str) -> Variable {
-        let mut name = String::new();
+        let mut key = String::new();
         let mut value = String::new();
 
-        let mut is_name = true;
+        let mut is_key = true;
         for i in variable.chars() {
             if i == self.config.define_char {
-                is_name = false;
-            } else if is_name {
-                name.push(i);
+                is_key = false;
+            } else if is_key {
+                key.push(i);
             } else {
                 value.push(i);
             }
         }
 
-        name = name.trim().to_string();
+        key = key.trim().to_string();
         value = value.trim().to_string();
 
         Variable {
-            name,
+            key,
             value,
             unknow_element: None,
         }

@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 #[derive(Default, Debug, Clone)]
 pub struct Variable {
-    pub name: String,
+    pub key: String,
     pub value: String,
     pub unknow_element: Option<String>,
 }
