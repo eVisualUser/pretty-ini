@@ -45,7 +45,7 @@ In the IniFile you can add some process using a ProcessAction.
 
 ### Pre Process
 
-Called before assign the file content to the buffer.
+Called before assigning the file content to the buffer.
 
 ```rust
 let action = Some(Box::new(|buffer| {
@@ -69,7 +69,7 @@ let action = Some(Box::new(|buffer| {
 ini_file.add_post_process(action);
 ```
 </details>
----
+
 ## ⚠️ Warnings
 - The output when saving will be reformated.
 - Implicit "root" table.
