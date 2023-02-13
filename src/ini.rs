@@ -196,3 +196,11 @@ impl Ini {
         Ok(())
     }
 }
+
+impl Ini {
+    pub fn create_table(&mut self, name: &str) {
+        let mut table = Table::default();
+        table.name = String::from(name);
+        self.content.push(table);
+    }
+}
