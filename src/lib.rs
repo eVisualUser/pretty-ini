@@ -27,7 +27,7 @@ mod tests {
             .get_all_keys_in_table("next")
             .expect("No key found in Next")
         {
-            println!("- {}", key);
+            println!("- {} = {:?}", key, ini.get("next", &key).unwrap());
         }
 
         file.save(&mut ini);

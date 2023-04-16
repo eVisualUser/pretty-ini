@@ -33,7 +33,7 @@ impl Parser {
 
         let mut is_key = true;
         for i in variable.chars() {
-            if i == self.config.define_char {
+            if is_key == true && i == self.config.define_char {
                 is_key = false;
             } else if is_key {
                 key.push(i);
