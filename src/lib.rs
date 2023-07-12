@@ -19,6 +19,18 @@ mod tests {
         let mut ini = ini::Ini::default();
         ini.load(&mut file).unwrap();
 
+        let var_iter = ini.get_ref_mut(ini::TABLE_NAME_ROOT, "root_var").unwrap();
+        assert_eq!(var_iter.parse::<String>(), Ok("Hello, World!".to_string()));
+
+        let var_iter = ini.get("hello", "hello").unwrap();
+        assert_eq!(var_iter.parse::<String>(), Ok("hello".to_string()));
+
+        let var_iter = ini.get("next", "hello_0").unwrap();
+        assert_eq!(var_iter.parse::<String>(), Ok("hello_0 = hello_1".to_string()));
+
+        let var_iter = ini.get("next", "hello_1").unwrap();
+        assert_eq!(var_iter.parse::<String>(), Ok("hello_1".to_string()));
+
         let var_iter = ini.get_ref_mut(ini::TABLE_NAME_ROOT, "iter").unwrap();
         var_iter.set(var_iter.parse::<i32>().unwrap() + 1);
 
