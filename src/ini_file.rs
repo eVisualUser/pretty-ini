@@ -53,8 +53,8 @@ impl IniFile {
 
     /// Save the file on disk
     pub fn save(&mut self, ini: &mut Ini, new_buffer: Option<Vec<String>>) -> Result<(), std::io::Error> {
-        if let Some(new_Buffer) = new_buffer {
-            self.buffer = Some(new_Buffer);
+        if let Some(new_buffer) = new_buffer {
+            self.buffer = Some(new_buffer);
         } else {
             self.buffer = Some(ini.make_ini_file_buffer());
         }
