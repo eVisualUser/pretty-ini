@@ -14,3 +14,5 @@ Cargo.lock
 
 # Html markdown
 README.html
+
+**/.idea/
