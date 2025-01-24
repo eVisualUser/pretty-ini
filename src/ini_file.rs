@@ -1,48 +1,44 @@
 use std::fs::File;
 use std::io::Write;
 use std::io::{BufRead, BufReader};
-
+use std::path::PathBuf;
 use crate::ini::Ini;
-
-pub type ProcessAction = Option<Box<dyn Fn(Vec<String>) -> Vec<String>>>;
 
 #[derive(Default)]
 pub struct IniFile {
-    path: String,
+    path: PathBuf,
     buffer: Option<Vec<String>>,
-    pre_process: ProcessAction,
-    post_process: ProcessAction,
 }
 
 impl IniFile {
+    /// Empty the buffer
     pub fn clear_buffer(&mut self) {
-        self.buffer = None;
+        if let Some(mut buffer) = self.buffer.take() {
+            buffer.clear();
+        }
     }
 
+    /// Set the buffer storing each line as a string in a Vec<String>
     pub fn set_buffer(&mut self, new_buffer: Vec<String>) {
         self.buffer = Some(new_buffer);
     }
 
-    pub fn get_path(&self) -> String {
+    pub fn get_path(&self) -> PathBuf {
         self.path.clone()
     }
 
-    pub fn set_path(&mut self, path: &str) {
-        self.path = String::from(path);
+    /// Set the path, and return if exists
+    pub fn set_path(&mut self, path: &str) -> bool {
+        self.path = path.parse().unwrap();
+
+        self.exist()
     }
 
     pub fn exist(&self) -> bool {
-        std::path::Path::new(&self.path).exists()
+        self.path.exists()
     }
 
-    pub fn add_pre_process_action(&mut self, action: ProcessAction) {
-        self.pre_process = action;
-    }
-
-    pub fn add_post_process_action(&mut self, action: ProcessAction) {
-        self.post_process = action;
-    }
-
+    /// Load the file from disk
     pub fn load(&mut self) {
         let mut result = Vec::<String>::new();
 
@@ -52,46 +48,43 @@ impl IniFile {
             result.push(line.unwrap());
         }
 
-        result = self.pre_process(result);
         self.buffer = Some(result);
     }
 
-    pub fn save(&mut self, ini: &mut Ini) {
-        self.buffer = Some(ini.make_ini_file_buffer());
-        self.buffer = Some(self.post_process(self.buffer.clone().unwrap()));
+    /// Save the file on disk
+    pub fn save(&mut self, ini: &mut Ini, new_buffer: Option<Vec<String>>) -> Result<(), std::io::Error> {
+        if let Some(newBuffer) = new_buffer {
+            self.buffer = Some(newBuffer);
+        } else {
+            self.buffer = Some(ini.make_ini_file_buffer());
+        }
 
-        std::fs::remove_file(&self.path).unwrap();
-        std::fs::File::create(&self.path).unwrap();
-        let mut file = File::options().write(true).open(&self.path).unwrap();
+        if !self.exist() {
+            File::create(&self.path)?;
+        }
 
-        let buffer = self.buffer.clone().unwrap();
-        for line in 0..buffer.len() {
-            file.write(format!("{}", buffer[line]).into_bytes().as_ref())
-                .unwrap();
+        match File::options().write(true).open(&self.path) {
+            Ok(mut file) => {
+                let buffer = self.buffer.clone().unwrap();
+                for line in 0..buffer.len() {
+                    file.write(format!("{}", buffer[line]).into_bytes().as_ref())?;
 
-            if line != buffer.len() - 1 {
-                file.write("\n".to_string().into_bytes().as_ref()).unwrap();
+                    if line != buffer.len() - 1 {
+                        file.write("\n".to_string().into_bytes().as_ref())?;
+                    }
+                }
+
+                file.flush()
+            }
+            Err(error) => {
+                Err(error)
             }
         }
-
-        file.flush().unwrap();
     }
 
-    pub fn pre_process(&self, content: Vec<String>) -> Vec<String> {
-        match &self.pre_process {
-            Some(uncrypt) => (uncrypt)(content),
-            None => content,
-        }
+    pub fn get_buffer(&mut self) -> &mut Option<Vec<String>> {
+        &mut self.buffer
     }
 
-    pub fn post_process(&mut self, content: Vec<String>) -> Vec<String> {
-        match &self.post_process {
-            Some(encrypt) => (encrypt)(content),
-            None => content,
-        }
-    }
-
-    pub fn get_content(&self) -> Option<Vec<String>> {
-        self.buffer.clone()
-    }
+    pub fn copy_buffer(&self) -> Option<Vec<String>> { self.buffer.clone() }
 }

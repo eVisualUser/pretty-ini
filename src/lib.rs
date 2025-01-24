@@ -42,6 +42,6 @@ mod tests {
             println!("- {} = {:?}", key, ini.get("next", &key).unwrap());
         }
 
-        file.save(&mut ini);
+        file.save(&mut ini, None).unwrap();
     }
 }

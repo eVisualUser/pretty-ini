@@ -5,29 +5,27 @@ use crate::table::Table;
 use crate::variable::Variable;
 
 pub const TABLE_NAME_ROOT: &str = "root";
-pub const TABLE_ERROR_ROOT: &str = "The table [root] already exist";
 
 #[derive(Default, Debug, Clone)]
 pub struct Ini {
     content: Vec<Table>,
-    unknow_elements: Vec<String>,
+    unknown_elements: Vec<String>,
     pub parser: Parser,
 }
 
 impl Ini {
+    /// Convert the parsed ini to a Vec<String> of ini syntax lines
     pub fn make_ini_file_buffer(&mut self) -> Vec<String> {
         let mut result = Vec::<String>::new();
 
         for table in self.content.iter() {
             result.append(&mut table.as_vec_string(&self.parser.config));
         }
-        result.append(&mut self.unknow_elements);
+        result.append(&mut self.unknown_elements);
 
         result
     }
-}
 
-impl Ini {
     pub fn get_all_table_names(&self) -> Vec<String> {
         let mut result = Vec::new();
 
@@ -36,6 +34,17 @@ impl Ini {
         }
 
         result
+    }
+
+    /// Check if the table exists in the parsed files,
+    /// but with a String::From(/*str variable*/)
+    pub fn table_exists_from_str(&self, name: &str) -> bool {
+        self.get_all_table_names().contains(&String::from(name))
+    }
+
+    /// Check if the table exists in the parsed files
+    pub fn table_exists(&self, name: &String) -> bool {
+        self.get_all_table_names().contains(name)
     }
 
     pub fn get_all_keys_in_table(&self, table: &str) -> Result<Vec<String>, String> {
@@ -53,9 +62,23 @@ impl Ini {
 
         Err(format!("No key found in table: {:?}", table))
     }
-}
 
-impl Ini {
+    /// Check if the key exists in the parsed table,
+    /// but with a String::From(/*str variable*/)
+    pub fn key_exists_from_str(&self, table: &str, key: &str) -> bool {
+        self.key_exists(&String::from(table), &String::from(key))
+    }
+
+    /// Check if the key exists in the parsed table
+    pub fn key_exists(&self, table: &String, key: &String) -> bool {
+        match self.get_all_keys_in_table(table) {
+            Ok(keys) => {
+                keys.contains(key)
+            }
+            Err(_) => false,
+        }
+    }
+
     pub fn get_parser_config(&self) -> ParserConfig {
         self.parser.config.clone()
     }
@@ -105,7 +128,7 @@ impl Ini {
             }
         }
 
-        return result;
+        result
     }
 
     pub fn get_ref(&self, table: &str, var: &str) -> Result<&Variable, String> {
@@ -137,15 +160,13 @@ impl Ini {
             }
         }
 
-        return result;
+        result
     }
-}
 
-impl Ini {
     pub fn load(&mut self, file: &mut IniFile) -> Result<(), String> {
         let lines;
 
-        match file.get_content() {
+        match file.get_buffer() {
             Some(content) => {
                 lines = content;
             }
@@ -181,7 +202,7 @@ impl Ini {
                         table = Table::default();
                         table.name = table_name;
                     } else {
-                        return Err(String::from(TABLE_ERROR_ROOT));
+                        return Err(String::from("The table [root] already exist"));
                     }
                 }
                 ElementType::Variable => {
@@ -195,12 +216,32 @@ impl Ini {
 
         Ok(())
     }
-}
 
-impl Ini {
     pub fn create_table(&mut self, name: &str) {
         let mut table = Table::default();
         table.name = String::from(name);
         self.content.push(table);
+    }
+
+    pub fn add_table(&mut self, name: &String) -> Result<&mut Table, &str> {
+        if (!self.table_exists(name)) {
+            let mut new_table = Table::default();
+            new_table.name = String::from(name);
+            self.content.push(new_table);
+
+            Ok(self.content.last_mut().unwrap())
+        } else {
+            Err(format!("Table {} already exists!", name).as_str())
+        }
+    }
+
+    pub fn add_key(&mut self, table: &String, key: &String) -> Result<&mut Variable, &str> {
+        if let Ok(table) = self.add_table(table) {
+            if (!self.key_exists(table, key)) {
+                let mut variable = Variable::default();
+                variable.key = key.clone();
+            }
+        }
+        Err(format!("Key {} already exists!", key).as_str())
     }
 }
