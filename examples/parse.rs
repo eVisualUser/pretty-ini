@@ -18,5 +18,5 @@ fn main() {
         println!("- {}", key);
     }
 
-    file.save(&mut ini);
+    file.save(&mut ini, None).unwrap();
 }
