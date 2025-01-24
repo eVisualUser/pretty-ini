@@ -223,25 +223,31 @@ impl Ini {
         self.content.push(table);
     }
 
-    pub fn add_table(&mut self, name: &String) -> Result<&mut Table, &str> {
-        if (!self.table_exists(name)) {
+    pub fn add_table(&mut self, name: &String) -> Result<&mut Table, String> {
+        if !self.table_exists(name) {
             let mut new_table = Table::default();
             new_table.name = String::from(name);
             self.content.push(new_table);
 
             Ok(self.content.last_mut().unwrap())
         } else {
-            Err(format!("Table {} already exists!", name).as_str())
+            Err(format!("Table {} already exists!", name))
         }
     }
 
-    pub fn add_key(&mut self, table: &String, key: &String) -> Result<&mut Variable, &str> {
-        if let Ok(table) = self.add_table(table) {
-            if (!self.key_exists(table, key)) {
+    pub fn add_key(&mut self, table: &String, key: &String) -> Result<&mut Variable, String> {
+        if !self.key_exists(table, key) {
+            if let Ok(table_ref) = self.get_table_ref_mut(table) {
                 let mut variable = Variable::default();
                 variable.key = key.clone();
+
+                table_ref.content.push(variable);
+                Ok(table_ref.content.last_mut().unwrap())
+            } else {
+                Err(format!("Failed to add key {}", key))
             }
+        } else {
+            Err(format!("Key {} already exist!", key))
         }
-        Err(format!("Key {} already exists!", key).as_str())
     }
 }
